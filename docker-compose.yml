@@ -1,19 +1,6 @@
 version: '2.29.4'
 
 services:
-  app:
-    image: javademo
-    ports:
-      - 8080:8080
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/localspringbootdb
-      SPRING_DATASOURCE_USERNAME: admin
-      SPRING_DATASOURCE_PASSWORD: root
-
-
-    depends_on:
-      - db
-
   db:
     image: mysql:8.0.27
     environment:
@@ -23,3 +10,19 @@ services:
       MYSQL_PASSWORD: root
     ports:
       - 3307:3306
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      retries: 5
+
+  app:
+    image: javademo
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/localspringbootdb
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: root
+    ports:
+      - 8080:8080
